@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Saya</title>
+    
+    <!-- Preconnect ke server Google agar DNS resolution lebih cepat -->
+    <link rel="preconnect" href="https://script.google.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: #f0f2f5; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .app-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Iframe disembunyikan dulu (opacity 0) saat loading */
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            position: absolute;
+            z-index: 1;
+            opacity: 0; 
+            transition: opacity 0.8s ease; 
+        }
+
+        iframe.loaded {
+            opacity: 1;
+        }
+        
+        /* Desain Loader menutupi layar */
+        #loader-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: opacity 0.8s ease;
+        }
+
+        /* Animasi Spinner Putar */
+        .spinner {
+            border: 5px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #0b5394; 
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        .loader-text {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Layar Loading -->
+    <div id="loader-wrapper">
+        <div class="spinner"></div>
+        <div class="loader-text">Memuat Aplikasi, mohon tunggu sebentar...</div>
+    </div>
+
+    <!-- Container Iframe -->
+    <div class="app-container">
+        <!-- Atribut sandbox memiliki allow-top-navigation dan allow-downloads -->
+        <iframe 
+            id="gas-frame"
+            src="https://script.google.com/macros/s/AKfycbyvciTduJEzLjiYmG0K9s_9Yk_r4a4_G-n6gXezPIFUZoVQjI8NtLfQ3oPoEXuVxJaAaw/exec" 
+            allowfullscreen="true"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation allow-downloads"
+            onload="hideLoader()"
+        ></iframe>
+    </div>
+
+    <script>
+        // Fungsi untuk menyembunyikan loader saat iframe selesai dimuat
+        function hideLoader() {
+            var loader = document.getElementById('loader-wrapper');
+            var iframe = document.getElementById('gas-frame');
+            
+            setTimeout(function() {
+                loader.style.opacity = '0';
+                iframe.classList.add('loaded'); 
+                
+                setTimeout(function() {
+                    loader.style.display = 'none';
+                }, 800);
+            }, 1500); 
+        }
+
+        // ==========================================
+        // FITUR BARU: PENANGKAP PESAN DARI APP SCRIPT
+        // ==========================================
+        window.addEventListener('message', function(event) {
+            // Pastikan data pesan ada dan berupa objek
+            if (event.data && typeof event.data === 'object') {
+                
+                // Jika App Script mengirim pesan dengan type 'NAVIGATE_OUT'
+                if (event.data.type === 'NAVIGATE_OUT' && event.data.url) {
+                    console.log("Menerima perintah navigasi ke: " + event.data.url);
+                    // Pindahkan halaman GitHub utama ke URL yang dituju (Keluar dari iframe)
+                    window.location.href = event.data.url;
+                }
+                
+                // Tambahan: Jika Anda nanti butuh fitur Reload dari dalam App Script
+                if (event.data.type === 'RELOAD_PAGE') {
+                    console.log("Menerima perintah memuat ulang halaman.");
+                    window.location.reload();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
